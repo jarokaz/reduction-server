@@ -1,0 +1,26 @@
+apiVersion: kubeflow.org/v1
+kind: TFJob
+metadata:
+  name: multi-worker
+spec:
+  cleanPodPolicy: None
+  tfReplicaSpecs:
+    Worker:
+      replicas: 2
+      template:
+        spec:
+          containers:
+            - name: tensorflow
+              resources:
+                  limits:
+                      nvidia.com/gpu: 1
+              image: gcr.io/jk-mlops-dev/model_garden
+              command: ["python", "trainer/train.py"]
+              args:
+                - --experiment=bert/sentence_prediction
+                - --mode=train_and_eval
+                - --tfhub_cache_dir=gs://jk-vertex-demos/jobs/tfhub-cache
+                - --config_file=trainer/glue_mnli_matched.yaml
+                - --model_dir=gs://jk-vertex-demos/jobs/r1/model
+                - --params_override=task.train_data.input_path=gs://jk-vertex-demos/datasets/MNLI/mnli_train.tf_record,task.validation_data.input_path=gs://jk-vertex-demos/datasets/MNLI/mnli_valid.tf_record,task.train_data.global_batch_size=32,task.validation_data.global_batch_size=32,task.hub_module_url=https://tfhub.dev/tensorflow/bert_en_uncased_L-24_H-1024_A-16/4,runtime.num_gpus=1,runtime.distribution_strategy=multi_worker_mirrored,runtime.all_reduce_alg=nccl,trainer.train_steps=6000,trainer.validation_interval=2000
+                
