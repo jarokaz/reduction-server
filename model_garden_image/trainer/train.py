@@ -84,13 +84,7 @@ def main(_):
       precision_dtype = bfloat16
     else:
       precision_dtype = float32 
-    #performance.set_mixed_precision_policy(params.runtime.mixed_precision_dtype)
-    performance.set_mixed_precision_policy(
-      #precision_dtype,
-      params.runtime.mixed_precision_dtype,
-      params.runtime.loss_scale,
-      use_experimental_api=True
-    )
+    performance.set_mixed_precision_policy(precision_dtype)
   distribution_strategy = distribute_utils.get_distribution_strategy(
       distribution_strategy=params.runtime.distribution_strategy,
       all_reduce_alg=params.runtime.all_reduce_alg,

@@ -1,4 +1,5 @@
 FROM gcr.io/deeplearning-platform-release/tf2-gpu.2-5
+#FROM gcr.io/deeplearning-platform-release/base-cu110
 
 RUN apt remove -y google-fast-socket \
 &&  echo "deb https://packages.cloud.google.com/apt google-fast-socket main" | tee /etc/apt/sources.list.d/google-fast-socket.list \
@@ -6,6 +7,8 @@ RUN apt remove -y google-fast-socket \
 &&  apt update && apt install -y google-reduction-server
 
 RUN pip install tf-models-official==2.5.0 tensorflow-text==2.5.0
+#RUN pip install -U tf-nightly tf-models-nightly \
+#&& pip install tensorflow-text
 
 WORKDIR /
 
