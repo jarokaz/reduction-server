@@ -11,7 +11,6 @@ RUN pip install tf-models-official==2.5.0 tensorflow-text==2.5.0
 WORKDIR /
 
 COPY trainer /trainer
-COPY dataprep /dataprep
 
 ENTRYPOINT ["python"]
 CMD ["-c", "print('TF Model Garden')"]

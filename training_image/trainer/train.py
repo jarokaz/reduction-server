@@ -50,7 +50,6 @@ def _get_model_dir(model_dir):
     return ((task_type == 'chief' and task_id == 0) or task_type is None)
   
   tf_config = os.getenv('TF_CONFIG')
-  print(tf_config)
   if tf_config:
     tf_config = json.loads(tf_config)
    
