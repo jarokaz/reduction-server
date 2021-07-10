@@ -15,58 +15,58 @@
 
 """TFM common training driver."""
 
-import os
 import json
+import os
 
 from absl import app
 from absl import flags
 from absl import logging
 import gin
-
-
 from official.common import distribute_utils
-# pylint: disable=unused-import
-from official.common import registry_imports
-# pylint: enable=unused-import
 from official.common import flags as tfm_flags
 from official.core import task_factory
 from official.core import train_lib
 from official.core import train_utils
 from official.modeling import performance
-
-from tensorflow.dtypes import float16, bfloat16, float32
+from tensorflow.dtypes import bfloat16, float16, float32
 
 FLAGS = flags.FLAGS
 
+
 def _get_model_dir(model_dir):
-  """Adjusts model dir for multi-worker training.
-  
-     Checkpointing and Saving need to happen on each worker and they need to write 
-     to different paths as they would override each others. This utility function
-     adjusts the base model dir passed as a flag using Vertex AI cluster topology
+  """Defines utility functions for model saving.
+
+  In a multi-worker scenario, the chief worker will save to the
+  desired model directory, while the other workers will save the model to
+  temporary directories. It’s important that these temporary directories
+  are unique in order to prevent multiple workers from writing to the same
+  location. Saving can contain collective ops, so all workers must save and
+  not just the chief.
   """
-  
+
   def _is_chief(task_type, task_id):
     return ((task_type == 'chief' and task_id == 0) or task_type is None)
-  
+
   tf_config = os.getenv('TF_CONFIG')
   if tf_config:
     tf_config = json.loads(tf_config)
-   
+
     if not _is_chief(tf_config['task']['type'], tf_config['task']['index']):
-      model_dir = os.path.join(model_dir, 'worker-{}').format(tf_config['task']['index'])
-  
+      model_dir = os.path.join(model_dir,
+                               'worker-{}').format(tf_config['task']['index'])
+
   logging.info('Setting model_dir to: %s', model_dir)
-  
+
   return model_dir
 
+
 def main(_):
-  
+
   model_dir = _get_model_dir(FLAGS.model_dir)
 
   gin.parse_config_files_and_bindings(FLAGS.gin_file, FLAGS.gin_params)
   params = train_utils.parse_configuration(FLAGS)
-  
+
   if 'train' in FLAGS.mode:
     # Pure eval modes do not output yaml files. Otherwise continuous eval job
     # may race against the train job for writing the same file.
@@ -95,6 +95,7 @@ def main(_):
       model_dir=model_dir)
 
   train_utils.save_gin_config(FLAGS.mode, model_dir)
+
 
 if __name__ == '__main__':
   tfm_flags.define_flags()
