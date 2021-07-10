@@ -24,11 +24,11 @@ from absl import logging
 import gin
 from official.common import distribute_utils
 from official.common import flags as tfm_flags
+from official.common import registry_imports
 from official.core import task_factory
 from official.core import train_lib
 from official.core import train_utils
 from official.modeling import performance
-from tensorflow.dtypes import bfloat16, float16, float32
 
 FLAGS = flags.FLAGS
 
